@@ -29,6 +29,9 @@ import networkx as nx
 from pathlib import Path
 from shutil import rmtree
 from tempfile import gettempdir
+
+import pandas as pd
+
 from .model import GraphModel
 from pandas import DataFrame, read_csv
 from ...utils.R import RPackages, launch_R_script
@@ -112,15 +115,19 @@ class GIES(GraphModel):
                        'obs': 'GaussL0penObsScore'}
         self.arguments = {'{FOLDER}': '/tmp/cdt_gies/',
                           '{FILE}': os.sep + 'data.csv',
+                          '{TARGETS}':  os.sep + 'targets.csv',
+                          '{INDEX}':  os.sep + 'index.csv',
                           '{SKELETON}': 'FALSE',
                           '{GAPS}': os.sep + 'fixedgaps.csv',
                           '{SCORE}': 'GaussL0penObsScore',
                           '{VERBOSE}': 'FALSE',
-                          '{OUTPUT}': os.sep + 'result.csv'}
+                          '{OUTPUT}': os.sep + 'result.csv',
+                          '{INTERVENE}': os.sep + 'intervention.csv',
+                          '{TRACK_INT}': 'TRUE'}
         self.verbose = SETTINGS.get_default(verbose=verbose)
         self.score = score
 
-    def orient_undirected_graph(self, data, graph):
+    def orient_undirected_graph(self, data, graph, targets, targets_index):
         """Run GIES on an undirected graph.
 
         Args:
@@ -138,12 +145,12 @@ class GIES(GraphModel):
         fe = DataFrame(nx.adjacency_matrix(graph, nodelist=sorted(graph.nodes()), weight=None).todense())
         fg = DataFrame(1 - fe.values)
 
-        results = self._run_gies(data, fixedGaps=fg, verbose=self.verbose)
+        results = self._run_gies(data, targets, targets_index, fixedGaps=fg, verbose=self.verbose)
 
         return nx.relabel_nodes(nx.DiGraph(results),
                                 {idx: i for idx, i in enumerate(sorted(data.columns))})
 
-    def orient_directed_graph(self, data, graph):
+    def orient_directed_graph(self, data, graph, targets, targets_index):
         """Run GIES on a directed_graph.
 
         Args:
@@ -155,9 +162,9 @@ class GIES(GraphModel):
 
         """
         warnings.warn("GIES is ran on the skeleton of the given graph.")
-        return self.orient_undirected_graph(data, nx.Graph(graph))
+        return self.orient_undirected_graph(data, nx.Graph(graph), targets, targets_index)
 
-    def create_graph_from_data(self, data):
+    def create_graph_from_data(self, data, targets, targets_index):
         """Run the GIES algorithm.
 
         Args:
@@ -170,12 +177,12 @@ class GIES(GraphModel):
         self.arguments['{SCORE}'] = self.scores[self.score]
         self.arguments['{VERBOSE}'] = str(self.verbose).upper()
 
-        results = self._run_gies(data, verbose=self.verbose)
+        results = self._run_gies(data, targets, targets_index, verbose=self.verbose)
 
-        return nx.relabel_nodes(nx.DiGraph(results),
-                                {idx: i for idx, i in enumerate(data.columns)})
+        return nx.relabel_nodes(nx.DiGraph(results[0]),
+                                {idx: i for idx, i in enumerate(data.columns)}), results[1]
 
-    def _run_gies(self, data, fixedGaps=None, verbose=True):
+    def _run_gies(self, data, targets, targets_index, fixedGaps=None, verbose=True):
         """Setting up and running GIES with all arguments."""
         # Run gies
         self.arguments['{FOLDER}'] = Path('{0!s}/cdt_gies_{1!s}/'.format(gettempdir(), uuid.uuid4()))
@@ -183,10 +190,18 @@ class GIES(GraphModel):
         os.makedirs(run_dir, exist_ok=True)
 
         def retrieve_result():
-            return read_csv(Path('{}/result.csv'.format(run_dir)), delimiter=',').values
+            return read_csv(Path('{}/result.csv'.format(run_dir)), delimiter=',').values,\
+                   read_csv(Path('{}/intervention.csv'.format(run_dir)), delimiter=',').values
 
         try:
             data.to_csv(Path('{}/data.csv'.format(run_dir)), header=False, index=False)
+            if targets is not None:
+                targets.to_csv(Path('{}/targets.csv'.format(run_dir)), header=False, index=False)
+            else:
+                self.arguments['{TRACK_INT}'] = 'FALSE'
+            if targets_index is not None:
+                targets_index.to_csv(Path('{}/index.csv'.format(run_dir)), header=False, index=False)
+
             if fixedGaps is not None:
                 fixedGaps.to_csv(Path('{}/fixedgaps.csv'.format(run_dir)), index=False, header=False)
                 self.arguments['{SKELETON}'] = 'TRUE'
@@ -195,7 +210,7 @@ class GIES(GraphModel):
 
 
             gies_result = launch_R_script(Path("{}/R_templates/gies.R".format(os.path.dirname(os.path.realpath(__file__)))),
-                                          self.arguments, output_function=retrieve_result, verbose=verbose)
+                                          self.arguments, output_function=retrieve_result, verbose=verbose, debug=True)
         # Cleanup
         except Exception as e:
             rmtree(run_dir)

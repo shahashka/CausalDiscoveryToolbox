@@ -13,7 +13,7 @@
 # copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
@@ -32,9 +32,19 @@ if({SKELETON}){
 }else{
   fixedGaps = NULL
 }
-score <- new("{SCORE}", data = dataset)
-result <- pcalg::gies(score, fixedGaps=fixedGaps)
+if({TRACK_INT}){
+  targets <- append(as.integer(unlist(read.csv(file='{FOLDER}{TARGETS}', header=FALSE, sep=","))),list(integer(0)), after=0)
+  targets.index <- as.integer(unlist(read.csv(file='{FOLDER}{INDEX}', header=FALSE, sep=",")))
+}else{
+  targets = list(integer(0))
+  targets.index = rep(as.integer(1), nrow(dataset))
+}
+score <- new("{SCORE}", data = dataset, targets=targets, target.index=targets.index)
+result <- pcalg::gies(score, fixedGaps=fixedGaps, targets=targets)
 gesmat <- as(result$essgraph, "matrix")
+next_node <- pcalg::opt.target(result$essgraph, max.size=1, use.node.names=TRUE)
+write.csv(next_node, row.names=FALSE, file = '{FOLDER}{INTERVENE}');
+
 gesmat[gesmat] <- 1
   #gesmat[!gesmat] <- 0
 write.csv(gesmat, row.names=FALSE, file = '{FOLDER}{OUTPUT}');
