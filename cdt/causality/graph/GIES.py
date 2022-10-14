@@ -29,7 +29,6 @@ import networkx as nx
 from pathlib import Path
 from shutil import rmtree
 from tempfile import gettempdir
-
 import pandas as pd
 
 from .model import GraphModel

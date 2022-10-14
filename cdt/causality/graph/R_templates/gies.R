@@ -32,8 +32,14 @@ if({SKELETON}){
 }else{
   fixedGaps = NULL
 }
+fun <- function(x) {
+    which( x == max(x) )
+}
 if({TRACK_INT}){
-  targets <- append(as.integer(unlist(read.csv(file='{FOLDER}{TARGETS}', header=FALSE, sep=","))),list(integer(0)), after=0)
+  targets_matrix <- as.matrix(read.csv(file='{FOLDER}{TARGETS}', header=FALSE, sep=","))
+  targets <- list(integer(0))
+  pos_max <- apply(targets_matrix, 1, fun )
+  targets <- append(targets, pos_max)
   targets.index <- as.integer(unlist(read.csv(file='{FOLDER}{INDEX}', header=FALSE, sep=",")))
 }else{
   targets = list(integer(0))
