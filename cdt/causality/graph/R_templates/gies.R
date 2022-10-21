@@ -47,10 +47,11 @@ if({TRACK_INT}){
 }
 score <- new("{SCORE}", data = dataset, targets=targets, target.index=targets.index)
 result <- pcalg::gies(score, fixedGaps=fixedGaps, targets=targets)
-gesmat <- as(result$essgraph, "matrix")
+#gesmat <- as(result$essgraph, "matrix")
+gesmat <- result$repr$weight.mat()
 next_node <- pcalg::opt.target(result$essgraph, max.size=1, use.node.names=TRUE)
 write.csv(next_node, row.names=FALSE, file = '{FOLDER}{INTERVENE}');
 
-gesmat[gesmat] <- 1
+#gesmat[gesmat] <- 1
   #gesmat[!gesmat] <- 0
 write.csv(gesmat, row.names=FALSE, file = '{FOLDER}{OUTPUT}');
