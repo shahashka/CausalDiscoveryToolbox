@@ -101,6 +101,7 @@ def precision_recall(target, prediction, low_confidence_undirected=False):
     pred = retrieve_adjacency_matrix(prediction, target.nodes()
                                             if isinstance(target, nx.DiGraph) else None,
                                             weight=True)
+    pred = np.abs(pred)
 
     if low_confidence_undirected:
         # Take account of undirected edges by putting them with low confidence
