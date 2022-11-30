@@ -104,7 +104,7 @@ class GIES(GraphModel):
         >>> plt.show()
     """
 
-    def __init__(self, score='obs', verbose=False):
+    def __init__(self, score='obs', verbose=False, skeleton=False):
         """Init the model and its available arguments."""
         if not RPackages.pcalg:
             raise ImportError("R Package pcalg is not available.")
@@ -124,6 +124,7 @@ class GIES(GraphModel):
                           '{INTERVENE}': os.sep + 'intervention.csv',
                           '{TRACK_INT}': 'TRUE'}
         self.verbose = SETTINGS.get_default(verbose=verbose)
+        self.skeleton = SETTINGS.get_default(skeleton=skeleton)
         self.score = score
 
     def orient_undirected_graph(self, data, graph, targets, targets_index):
@@ -163,7 +164,7 @@ class GIES(GraphModel):
         warnings.warn("GIES is ran on the skeleton of the given graph.")
         return self.orient_undirected_graph(data, nx.Graph(graph), targets, targets_index)
 
-    def create_graph_from_data(self, data, targets, targets_index):
+    def create_graph_from_data(self, data, targets, targets_index, fixedGaps):
         """Run the GIES algorithm.
 
         Args:
@@ -175,8 +176,7 @@ class GIES(GraphModel):
         # Building setup w/ arguments.
         self.arguments['{SCORE}'] = self.scores[self.score]
         self.arguments['{VERBOSE}'] = str(self.verbose).upper()
-
-        results = self._run_gies(data, targets, targets_index, verbose=self.verbose)
+        results = self._run_gies(data, targets, targets_index, fixedGaps=fixedGaps, verbose=self.verbose)
 
         return nx.relabel_nodes(nx.DiGraph(results[0]),
                                 {idx: i for idx, i in enumerate(data.columns)}), results[1]

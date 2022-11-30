@@ -56,7 +56,7 @@ def retrieve_adjacency_matrix(graph, order_nodes=None, weight=False):
         raise TypeError("Only networkx.DiGraph and np.ndarray (adjacency matrixes) are supported.")
     
     
-def precision_recall(target, prediction, low_confidence_undirected=False):
+def precision_recall(target, prediction, low_confidence_undirected=False, weighted=True):
     r"""Compute precision-recall statistics for directed graphs.
     
     Precision recall statistics are useful to compare algorithms that make 
@@ -100,7 +100,7 @@ def precision_recall(target, prediction, low_confidence_undirected=False):
     true_labels = retrieve_adjacency_matrix(target)
     pred = retrieve_adjacency_matrix(prediction, target.nodes()
                                             if isinstance(target, nx.DiGraph) else None,
-                                            weight=True)
+                                            weight=weighted)
     pred = np.abs(pred)
 
     if low_confidence_undirected:

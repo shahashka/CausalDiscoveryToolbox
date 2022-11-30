@@ -22,12 +22,15 @@
 
 library(methods)
 library(pcalg)
-
+library(stringr)
 dataset <- read.csv(file='{FOLDER}{FILE}', header=FALSE, sep=",");
 
 if({SKELETON}){
-  fixedGaps <- read.csv(file='{FOLDER}{GAPS}', sep=",", header=FALSE) # NULL
-  fixedGaps = (data.matrix(fixedGaps))
+  out <- read.csv(file='{FOLDER}{GAPS}', sep=",", header=FALSE) # NULL
+  out = as.matrix(out)
+  fixedGaps <- out
+  fixedGaps[] <- str_detect(out, "True")
+  class(fixedGaps) <- "logical"
   rownames(fixedGaps) <- colnames(fixedGaps)
 }else{
   fixedGaps = NULL
