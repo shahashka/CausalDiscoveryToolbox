@@ -276,7 +276,6 @@ def SID(target, pred):
     true_labels = retrieve_adjacency_matrix(target)
     predictions = retrieve_adjacency_matrix(pred, target.nodes()
                                             if isinstance(target, nx.DiGraph) else None)
-
     base_dir = Path('{0!s}/cdt_SID_{1!s}'.format(gettempdir(), uuid.uuid4()))
     os.makedirs(base_dir)
 
@@ -290,7 +289,7 @@ def SID(target, pred):
                                     {"{target}": Path('{}/target.csv'.format(base_dir)),
                                      "{prediction}": Path('{}/pred.csv'.format(base_dir)),
                                      "{result}": Path('{}/result.csv'.format(base_dir))},
-                                    output_function=retrieve_result)
+                                    output_function=retrieve_result, verbose=True)
     # Cleanup
     except Exception as e:
         rmtree(base_dir)
