@@ -172,10 +172,8 @@ class PC(GraphModel):
     def __init__(self, CItest="gaussian", method_indep='corr', alpha=0.01,
                  njobs=None, verbose=None):
         """Init the model and its available arguments."""
-        if not (RPackages.pcalg and RPackages.kpcalg and RPackages.RCIT):
-            raise ImportError("R Package (k)pcalg/RCIT is not available. "
-                              "RCIT has to be installed from "
-                              "https://github.com/Diviyan-Kalainathan/RCIT")
+        if not (RPackages.pcalg and RPackages.kpcalg):
+            raise ImportError("R Package (k)pcalg is not available. ")
 
         super(PC, self).__init__()
         self.dir_CI_test = {'binary': "pcalg::binCItest", # ic.method=\"dcc\"",
@@ -183,17 +181,13 @@ class PC(GraphModel):
                                  'hsic_gamma': "kpcalg::kernelCItest",
                                  'hsic_perm': "kpcalg::kernelCItest",
                                  'hsic_clust': "kpcalg::kernelCItest",
-                                 'gaussian': "pcalg::gaussCItest",
-                                 'rcit': "RCIT:::CItest",
-                                 'rcot': "RCIT:::CItest"}
+                                 'gaussian': "pcalg::gaussCItest"}
         self.dir_method_indep = {'binary': "dm=X, adaptDF = FALSE", # ic.method=\"dcc\"",
                                  'discrete': "dm=X, adaptDF = FALSE",
                                  'hsic_gamma': "data=X, ic.method=\"hsic.gamma\"",
                                  'hsic_perm': "data=X, ic.method=\"hsic.perm\"",
                                  'hsic_clust': "data=X, ic.method=\"hsic.clust\"",
-                                 'gaussian': "C = cor(X), n = nrow(X)",
-                                 'rcit': "data=X, ic.method=\"RCIT::RCIT\"",
-                                 'rcot': "data=X, ic.method=\"RCIT::RCoT\""}
+                                 'gaussian': "C = cor(X), n = nrow(X)"}
         self.CI_test = CItest
         self.method_indep = method_indep
         self.alpha = alpha

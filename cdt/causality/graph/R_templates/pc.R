@@ -25,7 +25,6 @@
 library('pcalg')
 library('kpcalg')
 library('methods')
-library('RCIT')
 
 runPC <- function(X, suffStat, parentsOf, alpha, variableSelMat, setOptions,
                   directed, verbose,fixedEdges,fixedGaps,
