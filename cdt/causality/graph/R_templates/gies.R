@@ -22,7 +22,7 @@
 
 library(methods)
 library(pcalg)
-library(stringr)
+#library(stringr)
 dataset <- read.csv(file='{FOLDER}{FILE}', header=FALSE, sep=",");
 
 if({SKELETON}){

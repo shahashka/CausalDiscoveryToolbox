@@ -172,7 +172,7 @@ class PC(GraphModel):
     def __init__(self, CItest="gaussian", method_indep='corr', alpha=0.01,
                  njobs=None, verbose=None):
         """Init the model and its available arguments."""
-        if not (RPackages.pcalg and RPackages.kpcalg):
+        if not (RPackages.pcalg):
             raise ImportError("R Package (k)pcalg is not available. ")
 
         super(PC, self).__init__()

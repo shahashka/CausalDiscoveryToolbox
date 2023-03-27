@@ -23,7 +23,6 @@
 # SOFTWARE.
 
 library('pcalg')
-library('kpcalg')
 library('methods')
 
 runPC <- function(X, suffStat, parentsOf, alpha, variableSelMat, setOptions,
